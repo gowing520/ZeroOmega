@@ -1267,6 +1267,12 @@ msgstr "Inspect proxy used for this Element"
 msgid "contextMenu_enableQuickSwitch"
 msgstr "Enable Quick Switch"
 
+msgid "contextMenu_networkMonitor"
+msgstr "Network monitor"
+
+msgid "contextMenu_tempRulesManager"
+msgstr "Temp Rules Manager"
+
 msgid "about_title"
 msgstr "About"
 
