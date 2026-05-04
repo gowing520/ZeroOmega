@@ -141,7 +141,11 @@ class Options
           'syncOptions': ''
           'gistId': ''
           'gistToken': ''
-        }).then(({syncOptions, gistId, gistToken}) =>
+          'syncUsername': ''
+          'syncBackendType': ''
+        }).then((
+          {syncOptions, gistId, gistToken, syncUsername, syncBackendType}
+        ) =>
           unless gistId
             unless syncOptions is 'disabled'
               syncOptions = 'pristine'
@@ -150,7 +154,9 @@ class Options
           unless @sync.enabled
             @_storage.get(null)
           else
-            @sync.init({gistId, gistToken}).catch((e) ->
+            @sync.init({
+              gistId, gistToken, username: syncUsername, syncBackendType
+            }).catch((e) ->
               console.log('sync init fail::', e)
             )
             @_syncWatchStop =
@@ -200,7 +206,10 @@ class Options
                   'firstRun': '',
                   'web.switchGuide': ''
                 })
-                {gistId, gistToken, lastGistCommit} = builtInSyncConfig
+                {
+                  gistId, gistToken, lastGistCommit, syncUsername
+                  syncBackendType
+                } = builtInSyncConfig
                 if syncConfig.lastGistCommit isnt lastGistCommit
                   if syncOptions in ['pristine', 'conflict']
                     @_state.set({
@@ -209,6 +218,8 @@ class Options
                       @setOptionsSync(true, {
                         gistId,
                         gistToken,
+                        username: syncUsername,
+                        syncBackendType,
                         useBuiltInSync: true,
                         force: true
                       })
@@ -1156,16 +1167,19 @@ class Options
             'Syncing not enabled due to conflict. Retry with force to overwrite
             local options and enable syncing.'))
       return if syncOptions == 'sync'
-      { gistId, gistToken } = args
+      { gistId, gistToken, username } = args
+      syncBackendType = args.syncBackendType or 'gist'
       @sync.init({
-        gistId, gistToken, withRemoteData: true
+        gistId, gistToken, username, syncBackendType, withRemoteData: true
       }).then( ({
         options: remoteOptions, lastGistCommit: remoteLastGistCommit
       }) =>
         @_state.set({
           'syncOptions': 'sync'
+          'syncBackendType': syncBackendType
           'gistId': gistId
           'gistToken': gistToken
+          'syncUsername': username || ''
         }).then =>
           if syncOptions == 'conflict'
             # Try to re-init options from sync.
@@ -1221,7 +1235,13 @@ class Options
     @sync.enabled = false
     @_syncWatchStop?()
     @_syncWatchStop = null
-    @_state.set({'syncOptions': 'conflict'}).then( =>
+    @_state.set({
+      'syncOptions': 'conflict'
+      'gistId': args.gistId
+      'gistToken': args.gistToken
+      'syncUsername': args.username || ''
+      'syncBackendType': args.syncBackendType || ''
+    }).then( =>
       @sync.init(args)
     ).then( =>
       @sync.storage.remove()

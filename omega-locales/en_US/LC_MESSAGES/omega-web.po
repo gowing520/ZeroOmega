@@ -505,6 +505,39 @@ msgstr ""
 "Options syncing is not supported on your platform or browser. For now, only "
 "Chrome browser on desktop is supported."
 
+msgid "options_syncBackend"
+msgstr "Sync Backend"
+
+msgid "options_syncBackendGist"
+msgstr "GitHub Gist"
+
+msgid "options_syncBackendWebdav"
+msgstr "WebDAV"
+
+msgid "options_syncUri"
+msgstr "Sync URI"
+
+msgid "options_syncUriPlaceholderGist"
+msgstr "Gist Id e.g. https://gist.github.com/{username}/{Gist Id}"
+
+msgid "options_syncUriPlaceholderWebdav"
+msgstr "WebDAV URL e.g. https://dav.example.com/path"
+
+msgid "options_syncWebdavUsername"
+msgstr "Username"
+
+msgid "options_syncWebdavUsernamePlaceholder"
+msgstr "WebDAV Username"
+
+msgid "options_syncWebdavPassword"
+msgstr "Password"
+
+msgid "options_syncWebdavPasswordPlaceholder"
+msgstr "WebDAV Password"
+
+msgid "options_syncWebdavHelp"
+msgstr "Enter your WebDAV service URL. Files will be stored in <URI>/zeroomega/"
+
 msgid "options_builtin"
 msgstr "Builtin"
 

@@ -36,6 +36,8 @@ class BrowserStorage extends Storage
         @proto.initValuesMap?(initValuesMap)
         _globalLocalStorageCache = true
       for own key, value of items
+        if typeof value == 'undefined'
+          continue
         value = JSON.stringify(value)
         @proto.setItem.call(@storage, @prefix + key, value)
       return new Promise( (resolve) ->

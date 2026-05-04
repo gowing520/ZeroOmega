@@ -230,6 +230,8 @@ class OptionsSync
       @state.get({
         'gistId': '',
         'gistToken': '',
+        'syncUsername': '',
+        'syncBackendType': '',
         'lastGistCommit': ''
       }).then((syncConfig) =>
         if useBuiltInSync is undefined

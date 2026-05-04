@@ -1,6 +1,9 @@
 module.exports =
   Storage: require('./storage')
   SyncStorage: require('./sync_storage')
+  SyncBackend: require('./sync_backend')
+  GistBackend: require('./gist_backend')
+  WebDAVBackend: require('./webdav_backend')
   Options: require('./options')
   ChromeTabs: require('./tabs')
   SwitchySharp: require('./switchysharp')

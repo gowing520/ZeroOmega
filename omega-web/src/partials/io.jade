@@ -41,27 +41,47 @@ section.settings-group
   div
     form.sync-form
       div.form-group
-        label {{'Gist Id'}}
+        label {{'options_syncBackend' | tr}}
+        .width-limit
+          select.form-control(
+            ng-model='syncBackendType'
+            ng-options='bt.id as (bt.label | tr) for bt in backendTypes'
+            ng-change='onBackendTypeManualChange()'
+            ng-disabled='syncOptions == "sync"')
+      div.form-group
+        label {{'options_syncUri' | tr}}
         .input-group.width-limit
-          span.input-group-addon {{'ID'}}
-          input.form-control(type='text' ng-model='gistId' ng-readonly='syncOptions == "sync"' placeholder="Gist Id e.g. https://gist.github.com/{username}/{Gist Id}")
+          span.input-group-addon {{'URI'}}
+          input.form-control(type='text' ng-model='gistId' ng-readonly='syncOptions == "sync"' placeholder="{{syncBackendType == 'webdav' ? ('options_syncUriPlaceholderWebdav' | tr) : ('options_syncUriPlaceholderGist' | tr)}}")
           span.glyphicon.glyphicon-remove.btn.clean-btn(ng-click='cleanInput("gistId")' ng-if='syncOptions != "sync"')
-        span.help-block
+        span.help-block(ng-if='syncBackendType == "gist"')
           a(href="https://gist.github.com/" role="button" target="_blank")
             | {{'Create a secret Gist. '}}
           strong
             | {{" Note: If it's a public Gist, your options can be searched by others。"}}
-      div.form-group
-        label {{'Gist Token'}}
+        span.help-block(ng-if='syncBackendType == "webdav"')
+          | {{'options_syncWebdavHelp' | tr}}
+      div.form-group(ng-if='syncBackendType == "webdav"')
+        label {{'options_syncWebdavUsername' | tr}}
         .input-group.width-limit
-          span.input-group-addon {{'TOKEN'}}
-          input.form-control(type='text' ng-model='gistToken' ng-readonly='syncOptions == "sync"' placeholder="Gist Token")
+          span.input-group-addon {{'USER'}}
+          input.form-control(type='text' ng-model='$parent.syncUsername' ng-readonly='syncOptions == "sync"' placeholder="{{'options_syncWebdavUsernamePlaceholder' | tr}}")
+          span.glyphicon.glyphicon-remove.btn.clean-btn(ng-click='cleanInput("syncUsername")' ng-if='syncOptions != "sync"')
+      div.form-group
+        label(ng-if='syncBackendType == "gist"') {{'Gist Token'}}
+        label(ng-if='syncBackendType == "webdav"') {{'options_syncWebdavPassword' | tr}}
+        .input-group.width-limit
+          span.input-group-addon(ng-if='syncBackendType == "gist"') {{'TOKEN'}}
+          span.input-group-addon(ng-if='syncBackendType == "webdav"') {{'PASS'}}
+          input.form-control(type='password' ng-model='gistToken' ng-readonly='syncOptions == "sync"' placeholder="{{syncBackendType == 'webdav' ? ('options_syncWebdavPasswordPlaceholder' | tr) : 'Gist Token'}}")
           span.glyphicon.glyphicon-remove.btn.clean-btn(ng-click='cleanInput("gistToken")' ng-if='syncOptions != "sync"')
-        span.help-block
+        span.help-block(ng-if='syncBackendType == "gist"')
           a(href="https://github.com/settings/tokens/new" role="button" target="_blank")
             | {{ 'Create a token that manages the Gist.' }}
             strong
               | {{ '(Gist permission is required.)'}}
+        span.help-block(ng-if='syncBackendType == "webdav"')
+          | {{'Password for WebDAV authentication.'}}
   div(ng-show='syncOptions == "pristine" || syncOptions == "disabled"')
     div.checkbox
       label
@@ -71,7 +91,7 @@ section.settings-group
         summary
           span.glyphicon.glyphicon-question-sign
         ol(omega-html='"options_useBuiltInSyncEnhanceTip" | tr')
-          
+
     p.help-block(omega-html='"options_syncPristineHelp" | tr')
     p
       button.btn.btn-default(ng-click='enableOptionsSync()' ladda='enableOptionsSyncing' data-spinner-color="currentColor")
@@ -87,9 +107,11 @@ section.settings-group
       | {{'('}}
       | {{lastGistState}}
       | {{')'}}
-      a(href="{{gistUrl}}" role="button" target="_blank")
+      a(ng-if='syncBackendType == "gist"' href="{{gistUrl}}" role="button" target="_blank")
         | {{' '}}
         span.glyphicon.glyphicon-link
+      span(ng-if='syncBackendType == "webdav"')
+        | {{' WebDAV'}}
       br
       br
       span.glyphicon.glyphicon-ok

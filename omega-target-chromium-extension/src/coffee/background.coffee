@@ -262,11 +262,18 @@ zeroBackground = (zeroStorage, opts) ->
     ], (changes, opts = {}) ->
       builtInSyncConfig = changes[BUILTINSYNCKEY]
       if builtInSyncConfig
-        {gistId, gistToken, lastGistCommit} = builtInSyncConfig
-        state.set({gistId, gistToken})
+        {
+          gistId, gistToken, lastGistCommit, syncUsername, syncBackendType
+        } = builtInSyncConfig
+        stateUpdate = {gistId, gistToken}
+        stateUpdate.syncUsername = syncUsername if syncUsername?
+        stateUpdate.syncBackendType = syncBackendType if syncBackendType?
+        state.set(stateUpdate)
         if sync.enabled
           console.log('check gist change', lastGistCommit)
-          sync.init({gistId, gistToken})
+          sync.init({
+            gistId, gistToken, username: syncUsername, syncBackendType
+          })
           state.get({
             'lastGistCommit': ''
           }).then((syncConfig) ->
@@ -291,6 +298,8 @@ zeroBackground = (zeroStorage, opts) ->
                 options.setOptionsSync(true, {
                   gistId,
                   gistToken,
+                  username: syncUsername,
+                  syncBackendType,
                   useBuiltInSync: true,
                   force: true
                 })
