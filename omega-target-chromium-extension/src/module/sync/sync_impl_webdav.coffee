@@ -1,10 +1,10 @@
-SyncBackend = require('./sync_backend')
+SyncImpl = require('./sync_impl')
 
 COMMIT_FILENAME = 'zeroomega-commit.txt'
 OPTION_FILE_PREFIX = 'zeroomega-'
 OPTION_FILE_SUFFIX = '.json'
 
-class WebDAVBackend extends SyncBackend
+class WebDavSyncImpl extends SyncImpl
   constructor: ->
     @baseUri = ''
     @token = ''
@@ -92,7 +92,11 @@ class WebDAVBackend extends SyncBackend
           "WebDAV getLastCommit failed: " + res.status)
       res.text()
     ).then((text) ->
-      text?.trim() || null
+      commitId = text?.trim() || null
+      if commitId and not /^[a-zA-Z0-9]+$/.test(commitId)
+        throw new Error("Remote " + COMMIT_FILENAME +
+          " contains illegal characters")
+      commitId
     )
 
   getOptions: (commitId) ->
@@ -151,4 +155,4 @@ class WebDAVBackend extends SyncBackend
       result += chars[byte % 16]
     return result
 
-module.exports = WebDAVBackend
+module.exports = WebDavSyncImpl

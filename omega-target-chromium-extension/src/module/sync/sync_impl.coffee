@@ -1,4 +1,8 @@
-class SyncBackend
+GistSyncImpl = require('./sync_impl_gist')
+WebDavSyncImpl = require('./sync_impl_webdav')
+
+class SyncImpl
+
   # Initialize the backend with configuration.
   # @param {Object} config
   #   config.uri - the remote URI (stored in gistId state field)
@@ -22,4 +26,12 @@ class SyncBackend
   # @returns {Promise<{commitId: string}>}
   pushOptions: (options, previousCommitId) -> throw new Error("not implemented")
 
-module.exports = SyncBackend
+loadSyncImpl = (type, config) ->
+  if type is 'webdav'
+    backend = new WebDavSyncImpl()
+  else
+    backend = new GistSyncImpl()
+  backend.init(config)
+  return backend
+
+module.exports = { SyncImpl, loadSyncImpl }

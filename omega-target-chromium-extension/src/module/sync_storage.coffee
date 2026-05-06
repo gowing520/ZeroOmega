@@ -1,8 +1,7 @@
 OmegaTarget = require('omega-target')
 Promise = OmegaTarget.Promise
 
-GistBackend = require('./gist_backend')
-WebDAVBackend = require('./webdav_backend')
+{ loadSyncImpl } = require('./sync/sync_impl')
 
 onChangedListenerInstalled = false
 isPulling = false
@@ -220,20 +219,11 @@ class ChromeSyncStorage extends OmegaTarget.Storage
     state = args.state
     uri = args.gistId || ''
     backendType = args.syncBackendType or 'gist'
-
-    if backendType is 'webdav'
-      backend = new WebDAVBackend()
-      backend.init({
-        uri: uri
-        token: args.gistToken
-        username: args.username
-      })
-    else
-      backend = new GistBackend()
-      backend.init({
-        uri: uri
-        token: args.gistToken
-      })
+    backend = loadSyncImpl(backendType, {
+      uri: uri
+      token: args.gistToken
+      username: args.username
+    })
 
     return new Promise((resolve, reject) ->
       backend.getLastCommit().then( (lastGistCommit) ->

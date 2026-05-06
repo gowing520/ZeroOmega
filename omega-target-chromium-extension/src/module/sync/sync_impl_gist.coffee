@@ -1,9 +1,9 @@
-SyncBackend = require('./sync_backend')
+SyncImpl = require('./sync_impl')
 
 mainLetters = ['Z','e', 'r', 'o', 'O', 'm','e', 'g', 'a']
 optionFilename = mainLetters.concat(['.json']).join('')
 
-class GistBackend extends SyncBackend
+class GistSyncImpl extends SyncImpl
   constructor: ->
     @gistId = ''
     @gistToken = ''
@@ -67,4 +67,4 @@ class GistBackend extends SyncBackend
         throw data.message
       return {commitId: data.history[0]?.version}
 
-module.exports = GistBackend
+module.exports = GistSyncImpl
