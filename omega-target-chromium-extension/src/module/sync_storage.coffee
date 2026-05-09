@@ -1,6 +1,7 @@
 OmegaTarget = require('omega-target')
 Promise = OmegaTarget.Promise
 
+{ loadSyncImpl } = require('./sync/sync_impl')
 
 onChangedListenerInstalled = false
 isPulling = false
@@ -8,15 +9,13 @@ isPushing = false
 
 state = null
 optionsSync = null
+backend = null
 
 mainLetters = ['Z','e', 'r', 'o', 'O', 'm','e', 'g', 'a']
 optionFilename = mainLetters.concat(['.json']).join('')
-gistId = ''
-gistToken = ''
-gistHost = 'https://api.github.com'
 
 processCheckCommit = ->
-  getLastCommit(gistId).then((remoteCommit) ->
+  backend.getLastCommit().then((remoteCommit) ->
     state.set({
       'lastGistSync': Date.now()
     }).then(->
@@ -30,40 +29,43 @@ processCheckCommit = ->
 
 processPull = (syncStore) ->
   return new Promise((resolve, reject) ->
-    getGist(gistId).then((gist) ->
-      if isPushing
+    backend.getLastCommit().then((commitId) ->
+      if not commitId
         resolve({changes: {}})
-      else
-        changes = {}
-        getAll(syncStore).then((data) ->
-          try
-            optionsStr = gist.files[optionFilename]?.content
-            options = JSON.parse(optionsStr)
-            for own key, val of data
-              changes[key] = {
-                oldValue: val
-              }
-            for own key, val of options
-              target = changes[key]
-              unless target
-                changes[key] = {}
+        return
+      backend.getOptions(commitId).then(({options, commitId: latestCommitId}) ->
+        if isPushing
+          resolve({changes: {}})
+        else
+          changes = {}
+          getAll(syncStore).then((data) ->
+            try
+              for own key, val of data
+                changes[key] = {
+                  oldValue: val
+                }
+              for own key, val of options
                 target = changes[key]
-              target.newValue = val
-            for own key,val of changes
-              if JSON.stringify(val.oldValue) is JSON.stringify(val.newValue)
-                delete changes[key]
-          catch e
-            changes = {}
-          state?.set({
-            'lastGistCommit': gist.history[0]?.version
-            'lastGistState': 'success'
-            'lastGistSync': Date.now()
-          })
-          resolve({
-            changes: changes,
-            remoteOptions: options
-          })
-        )
+                unless target
+                  changes[key] = {}
+                  target = changes[key]
+                target.newValue = val
+              for own key,val of changes
+                if JSON.stringify(val.oldValue) is JSON.stringify(val.newValue)
+                  delete changes[key]
+            catch e
+              changes = {}
+            state?.set({
+              'lastGistCommit': latestCommitId
+              'lastGistState': 'success'
+              'lastGistSync': Date.now()
+            })
+            resolve({
+              changes: changes,
+              remoteOptions: options
+            })
+          )
+      )
     ).catch((e) ->
       state?.set({
         'lastGistSync': Date.now()
@@ -72,6 +74,7 @@ processPull = (syncStore) ->
       resolve({changes: {}})
     )
   )
+
 getAll = (syncStore) ->
   idbKeyval.entries(syncStore).then((entries) ->
     data = {}
@@ -83,13 +86,30 @@ getAll = (syncStore) ->
 
 _processPush = ->
   if processPush.sequence.length > 0
-    #    syncStore = processPush.sequence.shift()
     syncStore = processPush.sequence[processPush.sequence.length - 1]
     processPush.sequence.length = 0
     getAll(syncStore).then((data) ->
-      updateGist(gistId, data)
-    ).then( ->
+      state.get({'lastGistCommit': ''}).then(({lastGistCommit}) ->
+        backend.pushOptions(data, lastGistCommit || null)
+      )
+    ).then(({commitId}) ->
+      state?.set({
+        'lastGistCommit': commitId
+        'lastGistState': 'success'
+        'lastGistSync': Date.now()
+      }).then( ->
+        optionsSync?.updateBuiltInSyncConfigIf({
+          lastGistCommit: commitId
+        })
+      )
       _processPush()
+    ).catch((e) ->
+      state?.set({
+        'lastGistState': 'fail: ' + e
+        'lastGistSync': Date.now()
+      })
+      console.error('push options fail::', e)
+      isPushing = false
     )
   else
     isPushing = false
@@ -98,85 +118,9 @@ processPush = (syncStore) ->
   processPush.sequence.push(syncStore)
   return if isPushing
   isPushing = true
-  setTimeout(_processPush, 600) # use timeout to merge push
+  setTimeout(_processPush, 600)
 
 processPush.sequence = []
-
-getLastCommit = (gistId) ->
-  fetch(gistHost + '/gists/' + gistId + '/commits?per_page=1', {
-    headers: {
-      "Accept": "application/vnd.github+json"
-      "Authorization": "Bearer " + gistToken
-      "X-GitHub-Api-Version": "2022-11-28"
-    }
-  }).then((res) -> res.json()).then((data) ->
-    if data.message
-      throw data.message
-    return data[0]?.version
-  )
-
-
-
-getGist = (gistId) ->
-#curl -L \
-#  -H "Accept: application/vnd.github+json" \
-#  -H "Authorization: Bearer <YOUR-TOKEN>" \
-#  -H "X-GitHub-Api-Version: 2022-11-28" \
-#  https://api.github.com/gists/GIST_ID
-  fetch(gistHost + '/gists/' + gistId, {
-    headers: {
-      "Accept": "application/vnd.github+json"
-      "Authorization": "Bearer " + gistToken
-      "X-GitHub-Api-Version": "2022-11-28"
-    }
-  }).then((res) -> res.json()).then((data) ->
-    if data.message
-      throw data.message
-    return data
-  )
-
-updateGist = (gistId, options) ->
-  postBody = {
-    description: mainLetters.concat([' Sync']).join('')
-    files: {}
-  }
-  postBody.files[optionFilename] = {
-    content: JSON.stringify(options, null, 4)
-  }
-  fetch(gistHost + '/gists/' + gistId, {
-    headers: {
-      "Accept": "application/vnd.github+json"
-      "Authorization": "Bearer " + gistToken
-      "X-GitHub-Api-Version": "2022-11-28"
-    }
-    "method": "PATCH"
-    body: JSON.stringify(postBody)
-  }).then((res) ->
-    res.json()
-  ).then((data) ->
-    if data.status is "404"
-      throw new Error("The token with Gist permission is required.")
-    if data.message
-      throw data.message
-    lastGistCommit = data.history[0]?.version
-    state?.set({
-      'lastGistCommit': lastGistCommit
-      'lastGistState': 'success'
-      'lastGistSync': Date.now()
-    }).then( ->
-      optionsSync?.updateBuiltInSyncConfigIf({
-        lastGistCommit
-      })
-    )
-    return data
-  ).catch((e) ->
-    state?.set({
-      'lastGistState': 'fail: ' + e
-      'lastGistSync': Date.now()
-    })
-    console.error('update gist fail::', e)
-  )
- 
 
 class ChromeSyncStorage extends OmegaTarget.Storage
   @parseStorageErrors: (err) ->
@@ -268,28 +212,26 @@ class ChromeSyncStorage extends OmegaTarget.Storage
     Promise.resolve(result)
 
   ##
-  # param(withRemoteData) retrive gist file content
+  # param(withRemoteData) retrieve remote file content
   ##
   init: (args) ->
     optionsSync = args.optionsSync
     state = args.state
-    gistId = args.gistId || ''
-    if gistId.indexOf('/') >= 0
-      # get gistId from url `https://gist.github.com/{username}/{gistId}`
-      gistId = gistId.replace(/\/+$/, '')
-      gistId = gistId.split('/')
-      gistId = gistId[gistId.length - 1]
-    gistToken = args.gistToken
+    uri = args.gistId || ''
+    backendType = args.syncBackendType or 'gist'
+    backend = loadSyncImpl(backendType, {
+      uri: uri
+      token: args.gistToken
+      username: args.username
+    })
+
     return new Promise((resolve, reject) ->
-      getLastCommit(gistId).then( (lastGistCommit) ->
-        if args.withRemoteData
-          getGist(gistId).then((gist) ->
-            try
-              optionsStr = gist.files[optionFilename].content
-              options = JSON.parse(optionsStr)
-              resolve({options, lastGistCommit})
-            catch e
-              resolve({})
+      backend.getLastCommit().then( (lastGistCommit) ->
+        if args.withRemoteData and lastGistCommit
+          backend.getOptions(lastGistCommit).then(({options}) ->
+            resolve({options, lastGistCommit})
+          ).catch((e) ->
+            resolve({})
           )
         else
           resolve({})
@@ -336,7 +278,6 @@ class ChromeSyncStorage extends OmegaTarget.Storage
       keys = keyMap
     area[id] = {keys: keys, callback: callback}
     if not onChangedListenerInstalled
-      # chrome alerm
       @checkChange()
       chrome.alarms.onAlarm.addListener (alarm) =>
         return unless enableSync
@@ -344,7 +285,6 @@ class ChromeSyncStorage extends OmegaTarget.Storage
         switch alarm.name
           when 'omega.syncCheck'
             @checkChange()
-      #chrome.storage.onChanged.addListener(ChromeSyncStorage.onChangedListener)
       onChangedListenerInstalled = true
     return ->
       enableSync = false
