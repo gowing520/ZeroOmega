@@ -1140,6 +1140,12 @@ msgstr "检查此[元素]使用的代理"
 msgid "contextMenu_enableQuickSwitch"
 msgstr "启用快速切换"
 
+msgid "contextMenu_networkMonitor"
+msgstr "网络监视器"
+
+msgid "contextMenu_tempRulesManager"
+msgstr "临时规则管理器"
+
 msgid "about_title"
 msgstr "关于"
 

@@ -17,12 +17,12 @@ initContextMenu = ->
 
   chrome.contextMenus.create({
     id: 'network'
-    title: 'Network monitor'
+    title: chrome.i18n.getMessage('contextMenu_networkMonitor')
     contexts: ["action"]
   })
   chrome.contextMenus.create({
     id: 'tempRulesManager'
-    title: 'Temp Rules Manager'
+    title: chrome.i18n.getMessage('contextMenu_tempRulesManager')
     contexts: ["action"]
   })
   chrome.contextMenus.create({
