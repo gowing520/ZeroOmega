@@ -118,7 +118,44 @@ angular.module('omega').controller 'IoCtrl', (
       $scope.restoringOnline = false
 
   $scope.enableOptionsSync = (args = {}) ->
+    createNewGist = (gistToken) ->
+      content = """ZeroOmega Gist Sync(#{moment()
+        .format('YYYY-MM-DD HH:mm:ss')})"""
+      fetch('https://api.github.com/gists', {
+        method: 'POST'
+        headers:
+          'Authorization': "token #{gistToken}"
+          'Content-Type': 'application/json'
+        body: JSON.stringify({
+          description: 'Init ZeroOmega Gist'
+          public: false
+          files: { 'readme.md': { content } }
+        })
+      }).then((r) -> r.json()).then((data) ->
+        if data.message
+          throw data.message
+        else
+          return data.html_url
+      )
     enable = ->
+      if $scope.syncBackendType == 'gist' and
+      !$scope.gistId and
+      $scope.gistToken
+        $scope.enableOptionsSyncing = true
+        createNewGist($scope.gistToken).then((gistUrl) ->
+          $scope.enableOptionsSyncing = false
+          $scope.gistId = gistUrl
+          _enable()
+        ).catch((e) ->
+          $scope.enableOptionsSyncing = false
+          $rootScope.showAlert(
+            type: 'error'
+            message: e.message || e
+          )
+        )
+      else
+        _enable()
+    _enable = ->
       if !$scope.gistId
         $rootScope.showAlert(
           type: 'error'
