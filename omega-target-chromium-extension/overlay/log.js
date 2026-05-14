@@ -116,4 +116,4 @@ const ZeroLogFactory = ()=>{
   console.error = ZeroLogError
 }
 
-export default ZeroLogFactory
+ZeroLogFactory()
