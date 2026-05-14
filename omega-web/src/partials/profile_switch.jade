@@ -171,8 +171,8 @@ div(ng-controller='SwitchProfileCtrl')
         .width-limit.inline-form-control(input-group-clear type='url' model='attached.sourceUrl'
           style='vertical-align: middle')
         p.help-block {{'options_ruleListUrlHelp' | tr}}
-      .form-group
-        label {{'options_group_ruleListHeaders' | tr}}
+      details.form-group(ng-open="::attached.headers && attached.headers.length > 0")
+        summary(style='display: list-item') {{'options_group_ruleListHeaders' | tr}}
         .width-limit
           .table-responsive(ng-if='attached.headers && attached.headers.length > 0')
             table.table.table-bordered.table-condensed

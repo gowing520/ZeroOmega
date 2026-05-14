@@ -13,6 +13,31 @@ div(ng-controller='PacProfileCtrl')
     .has-error(ng-show='isFileUrl(pacUrlCtrl.ctrl.$viewValue) && referenced')
       p.help-block #[span.glyphicon.glyphicon-remove-sign] {{'options_pacUrlFile' | tr}}
       p.help-block {{'options_pacUrlFileDisabled' | tr}}
+    details(ng-show='profile.pacUrl && !pacUrlIsFile' ng-open="::profile.headers && profile.headers.length > 0").form-group
+      summary(style='display: list-item') {{'options_group_ruleListHeaders' | tr}}
+      .width-limit
+        .table-responsive(ng-if='profile.headers && profile.headers.length > 0')
+          table.table.table-bordered.table-condensed
+            thead
+              tr
+                th {{'options_ruleListHeaderName' | tr}}
+                th {{'options_ruleListHeaderValue' | tr}}
+                th {{'options_conditionActions' | tr}}
+            tbody
+              tr(ng-repeat='header in profile.headers track by $index')
+                td
+                  input.form-control(type='text' ng-model='header.name' placeholder="{{'options_ruleListHeaderNamePlaceholder' | tr}}" required)
+                td
+                  input.form-control(type='text' ng-model='header.value' placeholder="{{'options_ruleListHeaderValuePlaceholder' | tr}}")
+                td
+                  button.btn.btn-danger.btn-sm(type='button' title="{{'options_deleteHeader' | tr}}" ng-click='removeHeader($index)')
+                    span.glyphicon.glyphicon-trash
+        button.btn.btn-default.btn-sm(type='button' ng-click='addHeader()')
+          span.glyphicon.glyphicon-plus
+          = ' '
+          | {{'options_addHeader' | tr}}
+      p.help-block {{'options_ruleListHeadersHelp' | tr}}
+
     p(ng-show='profile.pacUrl && !pacUrlIsFile')
       button.btn(ng-click='updateProfile(profile.name)'
         ladda='updatingProfile[profile.name]' data-spinner-color="#000000"

@@ -47,3 +47,11 @@ angular.module('omega').controller 'PacProfileCtrl', ($scope, $modal) ->
       else
         $scope.profile.auth ?= {}
         $scope.profile.auth[prop] = auth
+
+  # == Custom Headers ==
+  $scope.addHeader = ->
+    $scope.profile.headers ?= []
+    $scope.profile.headers.push({name: '', value: ''})
+
+  $scope.removeHeader = (index) ->
+    $scope.profile.headers.splice(index, 1)
