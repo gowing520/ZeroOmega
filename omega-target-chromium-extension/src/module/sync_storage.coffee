@@ -251,7 +251,9 @@ class ChromeSyncStorage extends OmegaTarget.Storage
         processPull(@syncStore).then(({changes, remoteOptions}) =>
           @flush({data: remoteOptions}).then( =>
             isPulling = false
-            ChromeSyncStorage.onChangedListener(changes, @areaName, opts)
+            Promise.all(
+              ChromeSyncStorage.onChangedListener(changes, @areaName, opts)
+            )
           )
         )
       else
