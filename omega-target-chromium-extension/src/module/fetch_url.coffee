@@ -3,8 +3,11 @@ Promise = OmegaTarget.Promise
 Url = require('url')
 ContentTypeRejectedError = OmegaTarget.ContentTypeRejectedError
 
-xhrWrapper = (args...) ->
-  fetch(args...).then((response) ->
+xhrWrapper = (url, headers) ->
+  options = {}
+  if headers
+    options.headers = headers
+  fetch(url, options).then((response) ->
     response.text().then((body) ->
       return [response, body]
     )
@@ -18,7 +21,7 @@ xhrWrapper = (args...) ->
       throw new OmegaTarget.HttpServerError(err)
     throw new OmegaTarget.HttpError(err)
 
-fetchUrl = (dest_url, opt_bypass_cache, opt_type_hints) ->
+fetchUrl = (dest_url, headers, opt_bypass_cache, opt_type_hints) ->
   getResBody = ([response, body]) ->
     return body unless opt_type_hints
     contentType = response.headers['content-type']?.toLowerCase()
@@ -36,11 +39,11 @@ fetchUrl = (dest_url, opt_bypass_cache, opt_type_hints) ->
     parsed.query['_'] = Date.now()
     dest_url_nocache = Url.format(parsed)
     # Try first with the dumb parameter to bypass cache.
-    xhrWrapper(dest_url_nocache).then(getResBody).catch ->
+    xhrWrapper(dest_url_nocache, headers).then(getResBody).catch ->
       # If failed, try again with the original URL.
-      xhrWrapper(dest_url).then(getResBody)
+      xhrWrapper(dest_url, headers).then(getResBody)
   else
-    xhrWrapper(dest_url).then(getResBody)
+    xhrWrapper(dest_url, headers).then(getResBody)
 
 defaultHintHandler = (response, body, {contentType, hint}) ->
   if '!' + contentType == hint

@@ -789,7 +789,12 @@ class Options
       url = OmegaPac.Profiles.updateUrl(profile)
       if url
         type_hints = OmegaPac.Profiles.updateContentTypeHints(profile)
-        fetchResult = @fetchUrl(url, opt_bypass_cache, type_hints)
+        headers = {}
+        if profile.headers
+          for header in profile.headers
+            # Being defensive here: filter out headers with empty names
+            headers[header.name] = header.value if header.name
+        fetchResult = @fetchUrl(url, headers, opt_bypass_cache, type_hints)
         results[key] = fetchResult.then((data) =>
           # Errors and unsuccessful response codes shoud have been already
           # rejected by fetchUrl and will not end up here.
@@ -816,11 +821,12 @@ class Options
   # Make an HTTP GET request to fetch the content of the url.
   # In base class, this method is not implemented and will always reject.
   # @param {string} url The name of the profiles,
+  # @param {?{}} headers Optional headers dictionary with name-value pairs
   # @param {?bool} opt_bypass_cache Do not read from the cache if true
   # @param {?string} opt_type_hints MIME type hints for downloaded content.
   # @returns {Promise<String>} The text content fetched from the url
   ###
-  fetchUrl: (url, opt_bypass_cache, opt_type_hints) ->
+  fetchUrl: (url, headers, opt_bypass_cache, opt_type_hints) ->
     Promise.reject new Error('not implemented')
 
   _replaceRefChanges: (fromName, toName, changes) ->

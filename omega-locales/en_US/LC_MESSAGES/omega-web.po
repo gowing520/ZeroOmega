@@ -727,6 +727,30 @@ msgstr ""
 "The rule list will be updated from this URL. If it is left blank, the "
 "following text will be parsed instead."
 
+msgid "options_group_ruleListHeaders"
+msgstr "Custom Headers"
+
+msgid "options_ruleListHeaderName"
+msgstr "Header Name"
+
+msgid "options_ruleListHeaderValue"
+msgstr "Header Value"
+
+msgid "options_ruleListHeaderNamePlaceholder"
+msgstr "e.g. Authorization"
+
+msgid "options_ruleListHeaderValuePlaceholder"
+msgstr "e.g. Bearer my-token"
+
+msgid "options_ruleListHeadersHelp"
+msgstr "You can specify custom HTTP headers to include when downloading the rule list. This is useful if, for example, the source requires authentication."
+
+msgid "options_deleteHeader"
+msgstr "Delete header"
+
+msgid "options_addHeader"
+msgstr "Add header"
+
 msgid "options_group_ruleListText"
 msgstr "Rule List Text"
 

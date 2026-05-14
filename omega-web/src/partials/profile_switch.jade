@@ -170,7 +170,31 @@ div(ng-controller='SwitchProfileCtrl')
         label {{'options_group_ruleListUrl' | tr}}
         .width-limit.inline-form-control(input-group-clear type='url' model='attached.sourceUrl'
           style='vertical-align: middle')
-      p.help-block {{'options_ruleListUrlHelp' | tr}}
+        p.help-block {{'options_ruleListUrlHelp' | tr}}
+      .form-group
+        label {{'options_group_ruleListHeaders' | tr}}
+        .width-limit
+          .table-responsive(ng-if='attached.headers && attached.headers.length > 0')
+            table.table.table-bordered.table-condensed
+              thead
+                tr
+                  th {{'options_ruleListHeaderName' | tr}}
+                  th {{'options_ruleListHeaderValue' | tr}}
+                  th {{'options_conditionActions' | tr}}
+              tbody
+                tr(ng-repeat='header in attached.headers track by $index')
+                  td
+                    input.form-control(type='text' ng-model='header.name' placeholder="{{'options_ruleListHeaderNamePlaceholder' | tr}}" required)
+                  td
+                    input.form-control(type='text' ng-model='header.value' placeholder="{{'options_ruleListHeaderValuePlaceholder' | tr}}")
+                  td
+                    button.btn.btn-danger.btn-sm(type='button' title="{{'options_deleteHeader' | tr}}" ng-click='removeHeader($index)')
+                      span.glyphicon.glyphicon-trash
+          button.btn.btn-default.btn-sm(type='button' ng-click='addHeader()')
+            span.glyphicon.glyphicon-plus
+            = ' '
+            | {{'options_addHeader' | tr}}
+        p.help-block {{'options_ruleListHeadersHelp' | tr}}
     p
       button.btn.btn-default(ng-disabled='!attached.sourceUrl' ng-click='updateProfile(attached.name)'
           ladda='updatingProfile[attached.name]' data-spinner-color="#000000"

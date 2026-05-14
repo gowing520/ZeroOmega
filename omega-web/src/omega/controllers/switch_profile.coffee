@@ -458,3 +458,11 @@ angular.module('omega').controller 'SwitchProfileCtrl', ($scope, $rootScope,
         omegaTarget.state('web.switchGuide', 'shown')
         return if $scope.profile.rules.length == 0
         $script 'js/switch_profile_guide.js'
+
+  # == Custom Headers ==
+  $scope.addHeader = ->
+    $scope.attached.headers ?= []
+    $scope.attached.headers.push({name: '', value: ''})
+
+  $scope.removeHeader = (index) ->
+    $scope.attached.headers.splice(index, 1)
