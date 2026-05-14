@@ -409,7 +409,7 @@ msgid "options_syncEnable"
 msgstr "啟用同步"
 
 msgid "options_useBuiltInSyncEnhance"
-msgstr "使用瀏覽器內建同步功能增強 Gist 同步使用體驗"
+msgstr "使用瀏覽器內建同步功能增強远程同步使用體驗"
 
 msgid "options_useBuiltInSyncEnhanceTip"
 msgstr "<li>用戶登入瀏覽器帳號後就自動下載擴展，並恢復所有已同步的設定</li>"

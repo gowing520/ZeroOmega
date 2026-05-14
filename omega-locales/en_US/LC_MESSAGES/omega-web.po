@@ -462,7 +462,7 @@ msgid "options_syncEnable"
 msgstr "Enable Syncing"
 
 msgid "options_useBuiltInSyncEnhance"
-msgstr "Enhance your Gist sync experience with built-in browser sync"
+msgstr "Enhance your remote sync experience with built-in browser sync"
 
 msgid "options_useBuiltInSyncEnhanceTip"
 msgstr "<li>After the user logs in to the browser account, the extension will be automatically downloaded and all synchronized settings will be restored</li>"
