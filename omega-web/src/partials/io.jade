@@ -99,7 +99,7 @@ section.settings-group
         = ' '
         | {{'options_syncEnable' | tr}}
   div(ng-show='syncOptions == "sync"')
-    p.alert.alert-success.width-limit
+    p.alert.width-limit(ng-class="alertType")
       button.btn.btn-sm.btn-success(ng-click='checkOptionsSyncChange()' ladda='enableOptionsSyncing')
         span.glyphicon.glyphicon-refresh
       span {{'   last sync date: '}}

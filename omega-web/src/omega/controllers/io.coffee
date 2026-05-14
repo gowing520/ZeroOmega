@@ -52,6 +52,10 @@ angular.module('omega').controller 'IoCtrl', (
     $scope.syncBackendType = syncBackendType or detectBackendType(gistId || '')
     $scope.lastGistSync = new Date(lastGistSync or Date.now())
     $scope.lastGistState = lastGistState or ''
+    if /fail\:/i.test(lastGistState)
+      $scope.alertType = 'alert-danger'
+    else
+      $scope.alertType = 'alert-success'
 
   $scope.$watch 'gistId', (newVal, oldVal) ->
     if newVal != oldVal and not $scope.syncBackendTypeManuallySet
